@@ -11,6 +11,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+// Configure multer to handle FormData
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.get("/", (req, res) => {
   res.send("HELLO, this is the root URL!!!");
@@ -65,6 +68,46 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Failed to login user' });
   }
 });
+
+app.get('/gettablename', async (req, res) => {
+  try {
+    const Tablename = await dbOperation.getTablenames();
+    res.json(Tablename.recordset);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal server error for Tablename' });
+  }
+});
+
+app.post('/tablenamecategories', async (req, res) => {
+  const { tableName } = req.body;
+  console.log("Received POST request with tableName:", tableName); // Log to see if you received the table name correctly
+  try {
+    console.log("Fetching categories for tableName:", tableName); // Log to see if you're attempting to fetch categories
+    const categories = await dbOperation.getCategoriesForTable(tableName);
+    console.log("Fetched categories:", categories); // Log the fetched categories
+    res.json({ categories });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/insertData',upload.none(), async (req, res) => {
+  const { tableName, dataToInsert } = req.body; // Extract tableName and dataToInsert from the request body
+  console.log("Received POST request with tableName:", req.body); // Log to see if you received the table name correctly
+  try {
+    // Assuming you have a function to insert data into your database
+    await dbOperation.insertData(tableName, dataToInsert); // Provide both tableName and dataToInsert
+
+    res.json({ message: 'Data inserted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 
 // --------------------------------- PORT ---------------
 app.listen(PORT, () => {

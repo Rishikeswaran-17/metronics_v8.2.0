@@ -2,7 +2,8 @@ import React from "react";
 import Login from "./LOGIN/Login";
 import Register from "./LOGIN/Register";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import SnowflakeHeader from "./Components/Header/SnowflakeHeader";
+import DataTables from "./Components/Tables/DataTables";
+
 
 const App = () => {
   return (
@@ -11,7 +12,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/snowflake" element={<SnowflakeHeader />} />
+          <Route path="/snowflake" element={<DataTables />} />
         </Routes>
       </Router>
     </div>
