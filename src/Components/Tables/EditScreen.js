@@ -4,6 +4,8 @@ const EditScreen = () => {
   const [selectedTable, setSelectedTable] = useState("");
   const [tableCategories, setTableCategories] = useState([]);
   const [formData, setFormData] = useState({}); // State to hold input values
+  const [selectedCheckboxes, setSelectedCheckboxes] = useState([]); // State to track selected checkboxes
+  const [checkboxValues, setCheckboxValues] = useState({}); // State to hold checkbox input values
 
   useEffect(() => {
     fetchTablename();
@@ -41,18 +43,67 @@ const EditScreen = () => {
       console.log(error);
     }
   };
+  const handleCheckboxChange = (event) => {
+    const category = event.target.name;
+    const isChecked = event.target.checked;
+
+    // Update the selected checkboxes state
+    if (isChecked) {
+      setSelectedCheckboxes((prevSelected) => [...prevSelected, category]);
+    } else {
+      setSelectedCheckboxes((prevSelected) =>
+        prevSelected.filter((item) => item !== category)
+      );
+    }
+  };
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
+    console.log("Input change:", name, value); // Add this line for debugging
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
+    setCheckboxValues((prevValues) => ({
+      ...prevValues,
+      [name]: value,
+    }));
   };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    try {
+        console.log("Form data to be submitted:", formData); // Log form data
+
+        const dataToSend = {
+          tableName: selectedTable,
+          dataToUpdate: formData
+        };
+
+      console.log("Data to be sent to backend:", dataToSend); // Log data with tableName
+
+      // Send formData to your backend for database insertion
+      const response = await fetch("/updateData", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dataToSend),
+      });
+
+      const responseData = await response.json();
+      console.log("Response from backend:", responseData); 
+      window.location.reload();
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  console.log("Rendering AddScreen component"); // Log when component renders
 
   return (
     <div>
-    
       <button
         type="button"
         class="btn btn-light-danger border-danger border-dashed border-1 btn-sm"
@@ -109,93 +160,39 @@ const EditScreen = () => {
                   ))}
                 </select>
                 {tableCategories.map((category, index) => (
-                  <div class="fs-6 form-check form-check-custom form-check-solid form-check-success mt-3 d-flex align-items-center gap-14">
-                    <div>
-                      <label class="form-check form-check-sm me-5" for={category}>
-                        <input
-                          class="form-check-input"
-                          type="checkbox"
-                          name={category} // Using original category name as input name
-                          value={formData[category] || ""} // Bind input value to state
-                          onChange={handleInputChange} // Handle input changes
-                          id={category}
-                        />
-                        <span class="form-check-label">{category}</span>
-                      </label>
-                    </div>
-                    
-                  </div>
-                ))}
-                
-                <label class="fs-6 fw-semibold form-label mt-5">
-                  <span class="required">Country</span>
+          <div
+            className="fs-6 form-check form-check-custom form-check-solid form-check-success mt-3 d-flex justify-between"
+            key={index}
+          >
+            <div>
+              <label className="form-check form-check-sm me-5" htmlFor={category}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name={category}
+                  value={checkboxValues[category] || ""}
+                  onChange={handleCheckboxChange}
+                  id={category}
+                />
+                <span className="form-check-label">{category}</span>
+              </label>
+            </div>
+            {selectedCheckboxes.includes(category) && (
+              <div className="mr-16">
+                <label className="fs-6 fw-semibold form-label mt-5 ">
+                  <span className="required">{category}</span>
                 </label>
-
                 <input
                   type="text"
-                  class="form-control form-control-solid"
-                  name="country"
+                  className="form-control form-control-solid w-fit"
+                  name={category}
+                  value={formData[category] || ""}
+                  onChange={handleInputChange}
                 />
-
-                <label class="fs-6 fw-semibold form-label mt-3">
-                  <span class="required">City</span>
-                </label>
-
-                <input
-                  type="text"
-                  class="form-control form-control-solid"
-                  name="city"
-                />
-
-                <label class="fs-6 fw-semibold form-label mt-3">
-                  <span class="required">Currency</span>
-                </label>
-
-                <input
-                  type="text"
-                  class="form-control form-control-solid"
-                  name="currency"
-                />
-
-                <label class="fs-6 fw-semibold form-label mt-3">
-                  <span class="required">Latitude</span>
-                </label>
-
-                <input
-                  type="text"
-                  class="form-control form-control-solid"
-                  name="latitude"
-                />
-
-                <label class="fs-6 fw-semibold form-label mt-3">
-                  <span class="required">Longitude</span>
-                </label>
-
-                <input
-                  type="text"
-                  class="form-control form-control-solid"
-                  name="longitude"
-                />
-
-                <label class="fs-6 fw-semibold form-label mt-3">
-                  <span class="required">Phone Code</span>
-                </label>
-
-                <input
-                  type="text"
-                  class="form-control form-control-solid"
-                  name="phone"
-                />
-
-                <label class="fs-6 fw-semibold form-label mt-3">
-                  <span class="required">Capital</span>
-                </label>
-
-                <input
-                  type="text"
-                  class="form-control form-control-solid"
-                  name="capital"
-                />
+              </div>
+            )}
+          </div>
+        ))}
               </form>
             </div>
 
@@ -207,7 +204,7 @@ const EditScreen = () => {
               >
                 Close
               </button>
-              <button type="button" class="btn btn-primary">
+              <button  onClick={handleSubmit} type="button" class="btn btn-primary">
                 Save changes
               </button>
             </div>

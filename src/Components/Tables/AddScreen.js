@@ -115,8 +115,7 @@ const AddScreen = () => {
                 </i>
               </div>
             </div>
-
-            <div className="modal-body">
+            <div className="modal-body scroll h-500px">
               <form>
                 <label className="fs-6 fw-semibold form-label mt-3">
                   <span className="required">Select Table</span>

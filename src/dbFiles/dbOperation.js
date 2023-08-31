@@ -64,6 +64,7 @@ const getTablenames = async () => {
   }
 };
 
+
 const getCategoriesForTable = async (tableName) => {
   try {
     // Make sure the connection is established before executing the query
@@ -75,12 +76,7 @@ const getCategoriesForTable = async (tableName) => {
       .query(`SELECT column_name
       FROM information_schema.columns
       WHERE table_name = @tableName
-        AND column_name <> (
-          SELECT column_name
-          FROM information_schema.columns
-          WHERE table_name = @tableName
-            AND COLUMNPROPERTY(object_id(TABLE_SCHEMA + '.' + TABLE_NAME), COLUMN_NAME, 'IsIdentity') = 1
-        );
+      AND COLUMNPROPERTY(OBJECT_ID(TABLE_SCHEMA + '.' + TABLE_NAME), COLUMN_NAME, 'IsIdentity') <> 1;       
       `);
     
     const categories = result.recordset.map((row) => row.column_name);
@@ -120,6 +116,75 @@ const insertData = async (tableName, dataToInsert) => {
   }
 };
 
+const UpdateData = async (tableName, dataToUpdate) => {
+  try {
+    console.log('tableName:', tableName);
+    console.log('dataToUpdate:', dataToUpdate);
+
+    const pool = await sql.connect(config);
+
+    // Construct your SQL query based on the tableName and dataToUpdate
+    const setClause = Object.keys(dataToUpdate)
+      .map((key) => `${key} = @${key}`)
+      .join(', ');
+
+    // Construct the WHERE clause dynamically based on matching columns and values
+    const whereConditions = Object.keys(dataToUpdate)
+      .map((key) => `${key} = @${key}_condition`)
+      .join(' OR ');
+
+    const query = `UPDATE ${tableName} SET ${setClause} WHERE ${whereConditions}`;
+
+    const inputParams = Object.entries(dataToUpdate).map(([key, value]) => ({
+      name: key,
+      type: sql.NVarChar(255), // Change the type based on your column's data type
+      value: value,
+    }));
+
+    const request = pool.request();
+    inputParams.forEach((param) => {
+      request.input(param.name, param.type, param.value);
+    });
+
+    // Duplicate the input parameters to use for the condition
+    inputParams.forEach((param) => {
+      request.input(`${param.name}_condition`, param.type, param.value);
+    });
+
+    await request.query(query);
+
+    console.log('Data updated successfully');
+  } catch (error) {
+    console.log('Error updating data:', error);
+    throw new Error('Failed to update data');
+  }
+};
+
+const getTablenameswithvalue = async (tableName) => {
+  try {
+    console.log('Attempting to connect to the database...');
+    await poolConnect;
+
+    console.log(`Executing query for table: ${tableName}`);
+    const result = await pool.request()
+      .input('tableName', sql.NVarChar, tableName)
+      .query(`SELECT * FROM ${tableName};`);
+    
+    console.log('Query executed successfully. Result:', result);
+
+    if (result.recordset.length === 0) {
+      console.log('No rows found.');
+    }
+
+    return result.recordset; // Return the array of rows
+  } catch (error) {
+    console.error('Error occurred:', error);
+    throw new Error('Failed to get table rows');
+  }
+};
+
+
+
 module.exports = {
   sql,
   registerUser,
@@ -128,5 +193,7 @@ module.exports = {
   getTablenames,
   getCategoriesForTable,
   insertData,
+  UpdateData,
+  getTablenameswithvalue,
 };
 

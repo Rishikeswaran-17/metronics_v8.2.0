@@ -107,7 +107,33 @@ app.post('/insertData',upload.none(), async (req, res) => {
   }
 });
 
+app.post('/updateData',upload.none(), async (req, res) => {
+  const { tableName, dataToUpdate } = req.body; // Extract tableName and dataToInsert from the request body
+  console.log("Received POST request with tableName:", req.body); // Log to see if you received the table name correctly
+  try {
+    // Assuming you have a function to insert data into your database
+    await dbOperation.UpdateData(tableName, dataToUpdate); // Provide both tableName and dataToInsert
 
+    res.json({ message: 'Data updated successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/tablecategorieswithvalue', async (req, res) => {
+  const { tableName } = req.body;
+  console.log("Received POST request with tableName:", tableName); // Log to see if you received the table name correctly
+  try {
+    console.log("Fetching rowvalues for tableName:", tableName); // Log to see if you're attempting to fetch categories
+    const rowvalues = await dbOperation.getTablenameswithvalue(tableName);
+    console.log("Fetched rowvalues:", rowvalues); // Log the fetched rowvalues
+    res.json(rowvalues.recordset);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 // --------------------------------- PORT ---------------
 app.listen(PORT, () => {

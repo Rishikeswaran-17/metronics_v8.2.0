@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import "datatables.net-bs5/css/dataTables.bootstrap5.min.css";
 import $ from "jquery";
 import "datatables.net-bs5";
@@ -48,6 +48,47 @@ const DataTables = () => {
   $("#kt_datatable_example_5").DataTable();
  }, []);
 
+ const [tablename, setTablename] = useState([]);
+  const [selectedTable, setSelectedTable] = useState("");
+  const [tabledetails, setTabledetails] = useState([]);
+  useEffect(() => {
+    fetchTablename();
+  }, []);
+  const fetchTablename = async () => {
+    try {
+      const response = await fetch("/gettablename");
+      const data = await response.json();
+      setTablename(data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleTableChange = async (event) => {
+    const selectedTableName = event.target.value;
+    setSelectedTable(selectedTableName);
+    try {
+      const response = await fetch("/tablecategorieswithvalue", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ tableName: selectedTableName }),
+      });
+      const data = await response.json();
+      console.log("Fetched data from backend:", data); 
+      setTabledetails(data); 
+      console.log("Updated tableCategories state:", data); 
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    if (tabledetails.length > 0) {
+      $("#kt_datatable_example_5").DataTable().destroy(); // Destroy existing DataTable instance
+      $("#kt_datatable_example_5").DataTable(); // Reinitialize DataTable with new data
+    }
+  }, [tabledetails]);
+
  return (
   <div className="container p-5">
    <div className="table-responsive">
@@ -55,6 +96,24 @@ const DataTables = () => {
      <EditScreen />
      <AddScreen />
     </div>
+     <form>
+          <label className="fs-6 fw-semibold form-label mt-3">
+            <span className="required">Select Table</span>
+          </label>
+          <select
+            className="form-select form-select-solid required"
+            aria-label="Select example"
+            onChange={handleTableChange}
+            value={selectedTable}
+          >
+            <option value=""></option>
+            {tablename.map((table, index) => (
+              <option key={index} value={table.TABLE_NAME}>
+                {table.TABLE_NAME}
+              </option>
+            ))}
+          </select>
+        </form>
     <table
      id="kt_datatable_example_5"
      className="display hover table table-striped gy-5 gs-7 border rounded dataTable no-footer"
@@ -119,7 +178,7 @@ const DataTables = () => {
      </thead>
      <tbody>
       <tr>
-       <td class="sorting_1">Tiger Nixon</td>
+       <td class="">Tiger Nixon</td>
        <td>System Architect</td>
        <td>Edinburgh</td>
        <td>61</td>
@@ -127,183 +186,14 @@ const DataTables = () => {
        <td>$320,800</td>
       </tr>
       <tr>
-       <td class="sorting_1">Garrett Winters</td>
-       <td>Accountant</td>
-       <td>Tokyo</td>
-       <td>63</td>
-       <td>2011-07-25</td>
-       <td>$170,750</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Ashton Cox</td>
-       <td>Junior Technical Author</td>
-       <td>San Francisco</td>
-       <td>66</td>
-       <td>2009-01-12</td>
-       <td>$86,000</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Cedric Kelly</td>
-       <td>Senior Javascript Developer</td>
+       <td class="">Tiger Nixon</td>
+       <td>System Architect</td>
        <td>Edinburgh</td>
-       <td>22</td>
-       <td>2012-03-29</td>
-       <td>$433,060</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Airi Satou</td>
-       <td>Accountant</td>
-       <td>Tokyo</td>
-       <td>33</td>
-       <td>2008-11-28</td>
-       <td>$162,700</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Brielle Williamson</td>
-       <td>Integration Specialist</td>
-       <td>New York</td>
        <td>61</td>
-       <td>2012-12-02</td>
-       <td>$372,000</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Donna Snider</td>
-       <td>Customer Support</td>
-       <td>New York</td>
-       <td>27</td>
-       <td>2011-01-25</td>
-       <td>$112,000</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Jonas Alexander</td>
-       <td>Developer</td>
-       <td>San Francisco</td>
-       <td>30</td>
-       <td>2010-07-14</td>
-       <td>$86,500</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Shad Decker</td>
-       <td>Regional Director</td>
-       <td>Edinburgh</td>
-       <td>51</td>
-       <td>2008-11-13</td>
-       <td>$183,000</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Michael Bruce</td>
-       <td>Javascript Developer</td>
-       <td>Singapore</td>
-       <td>29</td>
-       <td>2011-06-27</td>
-       <td>$183,000</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Donna Snider</td>
-       <td>Customer Support</td>
-       <td>New York</td>
-       <td>27</td>
-       <td>2011-01-25</td>
-       <td>$112,000</td>
-      </tr>
-      <tr>
-       <td class="sorting_1">Jonas Alexander</td>
-       <td>Developer</td>
-       <td>San Francisco</td>
-       <td>30</td>
-       <td>2010-07-14</td>
-       <td>$86,500</td>
-      </tr>
-      <tr>
-       <td>Shad Decker</td>
-       <td>Regional Director</td>
-       <td>Edinburgh</td>
-       <td>51</td>
-       <td>2008-11-13</td>
-       <td>$183,000</td>
-      </tr>
-      <tr>
-       <td>Michael Bruce</td>
-       <td>Javascript Developer</td>
-       <td>Singapore</td>
-       <td>29</td>
-       <td>2011-06-27</td>
-       <td>$183,000</td>
-      </tr>
-      <tr>
-       <td>Donna Snider</td>
-       <td>Customer Support</td>
-       <td>New York</td>
-       <td>27</td>
-       <td>2011-01-25</td>
-       <td>$112,000</td>
-      </tr>
-      <tr>
-       <td>Jonas Alexander</td>
-       <td>Developer</td>
-       <td>San Francisco</td>
-       <td>30</td>
-       <td>2010-07-14</td>
-       <td>$86,500</td>
-      </tr>
-      <tr>
-       <td>Shad Decker</td>
-       <td>Regional Director</td>
-       <td>Edinburgh</td>
-       <td>51</td>
-       <td>2008-11-13</td>
-       <td>$183,000</td>
-      </tr>
-      <tr>
-       <td>Michael Bruce</td>
-       <td>Javascript Developer</td>
-       <td>Singapore</td>
-       <td>29</td>
-       <td>2011-06-27</td>
-       <td>$183,000</td>
-      </tr>
-      <tr>
-       <td>Donna Snider</td>
-       <td>Customer Support</td>
-       <td>New York</td>
-       <td>27</td>
-       <td>2011-01-25</td>
-       <td>$112,000</td>
-      </tr>
-      <tr>
-       <td>Jonas Alexander</td>
-       <td>Developer</td>
-       <td>San Francisco</td>
-       <td>30</td>
-       <td>2010-07-14</td>
-       <td>$86,500</td>
-      </tr>
-      <tr>
-       <td>Shad Decker</td>
-       <td>Regional Director</td>
-       <td>Edinburgh</td>
-       <td>51</td>
-       <td>2008-11-13</td>
-       <td>$183,000</td>
-      </tr>
-      <tr>
-       <td>Michael Bruce</td>
-       <td>Javascript Developer</td>
-       <td>Singapore</td>
-       <td>29</td>
-       <td>2011-06-27</td>
-       <td>$183,000</td>
-      </tr>
-      <tr>
-       <td>Donna Snider</td>
-       <td>Customer Support</td>
-       <td>New York</td>
-       <td>27</td>
-       <td>2011-01-25</td>
-       <td>$112,000</td>
+       <td>2011-04-25</td>
+       <td>$320,5400</td>
       </tr>
      </tbody>
-
     </table>
    </div>
   </div>
