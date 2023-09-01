@@ -128,7 +128,7 @@ app.post('/tablecategorieswithvalue', async (req, res) => {
     console.log("Fetching rowvalues for tableName:", tableName); // Log to see if you're attempting to fetch categories
     const rowvalues = await dbOperation.getTablenameswithvalue(tableName);
     console.log("Fetched rowvalues:", rowvalues); // Log the fetched rowvalues
-    res.json(rowvalues.recordset);
+    res.json(rowvalues);
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal server error' });
